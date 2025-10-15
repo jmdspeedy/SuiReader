@@ -6,8 +6,7 @@ import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
-import android.nfc.tech.MifareUltralight
+import android.nfc.tech.NfcF
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -127,36 +126,30 @@ class MainActivity : AppCompatActivity() {
         }
         sb.delete(sb.length - 2, sb.length)
         for (tech in tag.techList) {
-            if (tech == MifareClassic::class.java.name) {
-                sb.append('\n')
-                var type = "Unknown"
-                try {
-                    val mifareTag = MifareClassic.get(tag)
+            // If card is a Felica
+            if (tech == NfcF::class.java.name) {
+                sb.append(extractFelica(tag)).append("here\n")
+            }
+        }
+        return sb.toString()
+    }
 
-                    when (mifareTag.type) {
-                        MifareClassic.TYPE_CLASSIC -> type = "Classic"
-                        MifareClassic.TYPE_PLUS -> type = "Plus"
-                        MifareClassic.TYPE_PRO -> type = "Pro"
-                    }
-                    sb.appendLine("Mifare Classic type: $type")
-                    sb.appendLine("Mifare size: ${mifareTag.size} bytes")
-                    sb.appendLine("Mifare sectors: ${mifareTag.sectorCount}")
-                    sb.appendLine("Mifare blocks: ${mifareTag.blockCount}")
-                } catch (e: Exception) {
-                    sb.appendLine("Mifare classic error: ${e.message}")
-                }
+    private fun extractFelica(tag: Tag): String {
+        val sb = StringBuilder()
+        sb.append('\n')
+        val nfcF = NfcF.get(tag)
+        // Check if Japan IC card
+        val sysCode = toHex(nfcF.systemCode)
+        if (sysCode == "03 00") {
+            try {
+                sb.appendLine("NFC-F / FeliCa:")
+                sb.appendLine("Manufacturer: ${toHex(nfcF.manufacturer)}")
+                sb.appendLine("System Code: ${toHex(nfcF.systemCode)}")
+            } catch (e: Exception) {
+                sb.appendLine("NFC-F / FeliCa error: ${e.message}")
             }
-            if (tech == MifareUltralight::class.java.name) {
-                sb.append('\n')
-                val mifareUlTag = MifareUltralight.get(tag)
-                var type = "Unknown"
-                when (mifareUlTag.type) {
-                    MifareUltralight.TYPE_ULTRALIGHT -> type = "Ultralight"
-                    MifareUltralight.TYPE_ULTRALIGHT_C -> type = "Ultralight C"
-                }
-                sb.append("Mifare Ultralight type: ")
-                sb.append(type)
-            }
+        } else {
+            sb.appendLine("This IC Card is not supported")
         }
         return sb.toString()
     }
