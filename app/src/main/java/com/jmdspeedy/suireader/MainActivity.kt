@@ -2,8 +2,6 @@ package com.jmdspeedy.suireader
 
 import android.app.PendingIntent
 import android.content.Intent
-import android.nfc.NdefMessage
-import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.NfcF
@@ -15,34 +13,43 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.transition.ChangeBounds
+import androidx.transition.Fade
+import androidx.transition.TransitionManager.beginDelayedTransition
+import androidx.transition.TransitionSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.jmdspeedy.suireader.record.ParsedNdefRecord
 import java.io.IOException
-import java.text.SimpleDateFormat
+import java.text.NumberFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
-    private var tagList: LinearLayout? = null
+    private var historyList: LinearLayout? = null
     private var nfcAdapter: NfcAdapter? = null
+    private var balanceText: TextView? = null
+    private var initialScanView: View? = null
+    private var suicaDataView: View? = null
+    private var historyTitle: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        tagList = findViewById<View>(R.id.list) as LinearLayout
+        historyList = findViewById(R.id.list)
+        balanceText = findViewById(R.id.balance_text)
+        initialScanView = findViewById(R.id.initial_scan_view)
+        suicaDataView = findViewById(R.id.suica_data_view)
+        historyTitle = findViewById(R.id.history_title)
 
         // Initialize the Suica station map
         Suica.init(this)
 
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        // for virtual device testing, comment this out
-//        if (nfcAdapter == null) {
-//            showNoNfcDialog()
-//            return
-//        }
     }
 
     override fun onResume() {
@@ -127,64 +134,91 @@ class MainActivity : AppCompatActivity() {
             val suicaData = Suica.extractData(tag)
 
             if (suicaData != null) {
-                val payload = dumpTagData(suicaData).toByteArray()
-                val record = NdefRecord(NdefRecord.TNF_UNKNOWN, byteArrayOf(), tag.id, payload)
-                val msg = NdefMessage(arrayOf(record))
-                buildTagViews(listOf(msg))
+                updateUi(suicaData)
             } else {
                 MaterialAlertDialogBuilder(this)
                     .setTitle("No Data Found")
-                    .setMessage("This card does not contain any data")
+                    .setMessage("Could not read data from this card.")
                     .setPositiveButton("Okay") { _, _ -> }.show()
             }
         }
     }
 
-    private fun dumpTagData(suicaData: SuicaData): String {
-        val sb = StringBuilder()
-        sb.appendLine("Card ID: ${suicaData.cardId}")
-        sb.appendLine("Balance: ¥${suicaData.balance ?: "N/A"}")
-        sb.appendLine("\nTechnologies: FeliCa")
-        sb.appendLine("  Manufacturer: ${suicaData.manufacturer}")
-        sb.appendLine("  System Code: ${suicaData.systemCode}")
-        sb.appendLine("\n  IC Card History:")
-        if (suicaData.transactionHistory.isEmpty()) {
-            sb.appendLine("    No history found.")
-        } else {
-            suicaData.transactionHistory.forEachIndexed { i, block ->
-                sb.appendLine("    Block $i:")
-                sb.appendLine("      Console: ${block.consoleType}, Process: ${block.processType}")
-                sb.appendLine("      Date: ${block.date}, Balance: ¥${block.balance}")
-                if (block.entryStationCode != null || block.exitStationCode != null) {
-                    sb.appendLine("      Entry Station: ${block.entryStationCode ?: "-"}, Exit Station: ${block.exitStationCode ?: "-"}")
-                }
-                sb.appendLine("      Entry Station Name: ${block.entryStationName ?: "-"}, Exit Station Name: ${block.exitStationName ?: "-"}")
-            }
+    private fun crossfadeViews(inView: View, outView: View) {
+        val suicaCard = findViewById<CardView>(R.id.suica_card)
+
+        val transition = TransitionSet().apply {
+            // For the smooth resizing of the card
+            addTransition(ChangeBounds())
+            // For the fading of the content
+            addTransition(Fade())
+            duration = 350 // A slightly longer duration feels smoother
+            interpolator = AccelerateDecelerateInterpolator()
         }
-        return sb.toString()
+
+        beginDelayedTransition(suicaCard, transition)
+
+        // After setting up the transition, simply change the visibility.
+        // The TransitionManager will animate the changes.
+        outView.visibility = View.GONE
+        inView.visibility = View.VISIBLE
     }
 
+    private fun updateUi(suicaData: SuicaData) {
+        // Animate from initial view to data view
+        crossfadeViews(suicaDataView!!, initialScanView!!)
+        historyTitle?.visibility = View.VISIBLE
 
-    private fun buildTagViews(msgs: List<NdefMessage>) {
-        if (msgs.isEmpty()) {
-            return
-        }
+        // Update card info
+        val formattedBalance = NumberFormat.getCurrencyInstance(Locale.JAPAN).format(suicaData.balance)
+        balanceText?.text = formattedBalance
+
+        // Clear old history
+        historyList?.removeAllViews()
+
+        // Populate history
         val inflater = LayoutInflater.from(this)
-        val content = tagList
+        if (suicaData.transactionHistory.isEmpty()) {
+            val noHistoryView = TextView(this)
+            noHistoryView.text = "No history found."
+            historyList?.addView(noHistoryView)
+        } else {
+            suicaData.transactionHistory.forEach { block ->
+                val historyView = inflater.inflate(R.layout.history_item, historyList, false)
+                val icon = historyView.findViewById<ImageView>(R.id.icon)
+                val dateText = historyView.findViewById<TextView>(R.id.date_text)
+                val descriptionText = historyView.findViewById<TextView>(R.id.description_text)
+                val amountText = historyView.findViewById<TextView>(R.id.amount_text)
 
-        // Clear existing views
-        clearTags()
+                dateText.text = block.date
 
-        val now = Date()
-        val records = NdefMessageParser.parse(msgs[0])
-        val size = records.size
-        for (i in 0 until size) {
-            val timeView = TextView(this)
-            timeView.text = TIME_FORMAT.format(now)
-            content!!.addView(timeView, 0)
-            val record: ParsedNdefRecord = records[i]
-            content.addView(record.getView(this, inflater, content, i), 1 + i)
-            content.addView(inflater.inflate(R.layout.tag_divider, content, false), 2 + i)
+                // Set icon and description based on process type
+                when (block.processType) {
+                    "Charge", "Auto-charge" -> {
+                        icon.setImageResource(android.R.drawable.ic_input_add)
+                        descriptionText.text = block.processType
+                        amountText.text = "+${NumberFormat.getCurrencyInstance(Locale.JAPAN).format(block.balance)}"
+//                        amountText.setTextColor(resources.getColor(R.color.teal_700, theme))
+                    }
+                    "Bus (PiTaPa?)", "Bus (IruCa?)" -> {
+//                        icon.setImageResource(android.R.drawable.ic_menu_directions_bus)
+                        descriptionText.text = "Local Bus"
+                        amountText.text = "-¥${block.balance}" // Assuming bus rides are deductions
+                    }
+                    "Vending machine/POS", "Vending machine" -> {
+                        icon.setImageResource(android.R.drawable.ic_menu_crop)
+                        descriptionText.text = "Purchase"
+                         amountText.text = "-¥${block.balance}"
+                    }
+                    else -> { // Train icon for most other cases
+//                        icon.setImageResource(android.R.drawable.ic_menu_directions_railway)
+                        descriptionText.text = "${block.entryStationName ?: "Station"} → ${block.exitStationName ?: "Station"}"
+                        amountText.text = "-¥${block.balance}"
+                    }
+                }
+
+                historyList?.addView(historyView)
+            }
         }
     }
 
@@ -196,18 +230,13 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_main_clear -> {
-                clearTags()
+                // Return to initial state
+                crossfadeViews(initialScanView!!, suicaDataView!!)
+                historyTitle?.visibility = View.GONE
+                historyList?.removeAllViews()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun clearTags() {
-        tagList?.removeAllViews()
-    }
-
-    companion object {
-        private val TIME_FORMAT = SimpleDateFormat.getDateTimeInstance()
     }
 }

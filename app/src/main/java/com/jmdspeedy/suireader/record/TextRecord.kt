@@ -30,20 +30,19 @@ import java.util.*
  * An NFC Text Record
  */
 class TextRecord private constructor(private val text: String) : ParsedNdefRecord {
-    /**
-     * Returns the ISO/IANA language code associated with this text element.
-     */
-
     override fun getView(
         activity: Activity,
         inflater: LayoutInflater,
         parent: ViewGroup,
         offset: Int
     ): View {
-        val view = inflater.inflate(R.layout.tag_text, parent, false) as TextView
-        view.text = this.text
-        return view
+        TODO("Not yet implemented")
     }
+
+    /**
+     * Returns the ISO/IANA language code associated with this text element.
+     */
+
 
     companion object {
         // TODO: deal with text fields which span multiple NdefRecords

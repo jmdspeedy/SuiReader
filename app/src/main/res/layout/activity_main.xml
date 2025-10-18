@@ -1,34 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     Copyright (C) 2010 The Android Open Source Project
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    tools:context=".MainActivity">
 
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-
-          http://www.apache.org/licenses/LICENSE-2.0
-
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
--->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <LinearLayout
-            android:id="@+id/list"
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-        <TextView
-                android:id="@+id/tag_viewer_text"
-                android:layout_width="fill_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Suica Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/suica_card"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                android:autoLink="email|web"
-                android:text="@string/intro_message" />
-    </LinearLayout>
-</ScrollView>
+                app:cardBackgroundColor="#A5D6A7"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <!-- Initial State: Prompt to scan -->
+                    <LinearLayout
+                            android:id="@+id/initial_scan_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="282dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="64dp"
+                            android:visibility="visible"
+                            android:background="#A4D568">
+
+                        <ImageView
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:contentDescription="TODO"
+                                android:src="@android:drawable/ic_menu_rotate"
+                                app:tint="@android:color/white" />
+
+                        <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="@string/hold_your_ic_card_to_the_reader"
+                                android:textColor="@android:color/white"
+                                android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                    <!-- Data State: Shows Suica Info -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/suica_data_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="24dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/suica_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/suica"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/balance_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            tools:text="¥3,240"
+                            android:textColor="@android:color/white"
+                            android:textSize="40sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/suica_label" />
+
+                        <!-- This space adds extra height to the card -->
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            app:layout_constraintTop_toBottomOf="@+id/balance_text"
+                            app:layout_constraintBottom_toBottomOf="parent"/>
+
+                        <ImageView
+                            android:id="@+id/penguin_logo"
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@android:drawable/sym_def_app_icon"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:contentDescription="Suica Penguin Logo" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- History List -->
+            <TextView
+                android:id="@+id/history_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history"
+                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                android:textColor="@android:color/black"/>
+
+            <LinearLayout
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                tools:context=".MainActivity">
+                <!-- History items will be added here dynamically -->
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

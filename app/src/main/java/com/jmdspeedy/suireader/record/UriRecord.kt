@@ -38,10 +38,7 @@ class UriRecord private constructor(private val uri: Uri) : ParsedNdefRecord {
         parent: ViewGroup,
         offset: Int
     ): View {
-        val text = inflater.inflate(R.layout.tag_text, parent, false) as TextView
-        text.autoLinkMask = Linkify.WEB_URLS or Linkify.EMAIL_ADDRESSES or Linkify.PHONE_NUMBERS
-        text.text = uri.toString()
-        return text
+        TODO("Not yet implemented")
     }
 
     companion object {
