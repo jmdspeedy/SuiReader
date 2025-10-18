@@ -10,6 +10,7 @@ import android.nfc.tech.NfcF
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -91,24 +92,35 @@ class MainActivity : AppCompatActivity() {
             NfcAdapter.ACTION_NDEF_DISCOVERED
         )
         if (intent.action in validActions) {
-            // TODO
             val rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
             val messages = mutableListOf<NdefMessage>()
-            if (rawMsgs != null) {
-                rawMsgs.forEach {
-                    messages.add(it as NdefMessage)
+            val empty = ByteArray(0)
+            val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)
+            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
+            var isSuica = false
+            for (tech in tag.techList) {
+                // If card is a Felica
+                if (tech == NfcF::class.java.name) {
+                    val nfcF = NfcF.get(tag)
+                    val systemCode = toHex(nfcF.systemCode)
+                    if (systemCode == "03 00") {
+                        isSuica = true
+                    }
                 }
-            } else {
-                // Unknown tag type
-                val empty = ByteArray(0)
-                val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)
-                val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
+            }
+            Log.d("MainActivity", "isSuica: $isSuica")
+            if (isSuica) {
                 val payload = dumpTagData(tag).toByteArray()
                 val record = NdefRecord(NdefRecord.TNF_UNKNOWN, empty, id, payload)
                 val msg = NdefMessage(arrayOf(record))
                 messages.add(msg)
+            } else {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Wrong Card Type")
+                    .setMessage("This is not a Japanese IC card")
+                    .setPositiveButton("Okay") { dialog, which ->
+                    }.show()
             }
-            // Setup the views
             buildTagViews(messages)
         }
     }
@@ -127,12 +139,7 @@ class MainActivity : AppCompatActivity() {
             sb.append(", ")
         }
         sb.delete(sb.length - 2, sb.length)
-        for (tech in tag.techList) {
-            // If card is a Felica
-            if (tech == NfcF::class.java.name) {
-                sb.append(extractFelica(tag))
-            }
-        }
+        sb.append(extractFelica(tag))
         return sb.toString()
     }
 
@@ -146,12 +153,7 @@ class MainActivity : AppCompatActivity() {
             sb.appendLine("  Manufacturer: ${toHex(nfcF.manufacturer)}")
             sb.appendLine("  System Code: $systemCode")
 
-            if (systemCode == "03 00") { // Common system code for transportation IC cards
-                // Request Block 0 from Service Code 0x008B (Card Attribute Information)
-                val idm = nfcF.tag.id
-            }
-
-            //Read History if applicable
+            //Read History
             sb.append(readSuicaHistory(nfcF))
 
         } catch (e: IOException) {
