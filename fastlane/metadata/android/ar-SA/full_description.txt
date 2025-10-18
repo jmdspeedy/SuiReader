@@ -1,3 +1,0 @@
-هذا تطبيق بسيط لقراءة علامات مختلفة (NDEF, RFID, FeliCa, ISO 14443, الخ).
-
-لقد تم شفره من <a href="https://f-droid.org/de/packages/se.anyro.nfc_reader/">se.anyro.nfc_reader</a>.
