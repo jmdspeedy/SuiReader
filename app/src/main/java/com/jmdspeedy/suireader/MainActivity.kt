@@ -85,6 +85,24 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun isJapaneseICTag(tag: Tag): Boolean {
+        if (!tag.techList.any { it.endsWith("NfcF") }) {
+            return false
+        }
+        val nfcF = NfcF.get(tag)
+        return try {
+            nfcF.connect()
+            val systemCode = Suica.toHex(nfcF.systemCode)
+            val isJapaneseIC = systemCode == "03 00"
+            nfcF.close()
+            isJapaneseIC
+        } catch (e: IOException) {
+            Log.e("MainActivity", "Could not connect to FeliCa card to check system code.", e)
+            if (nfcF.isConnected) nfcF.close()
+            false
+        }
+    }
+
     private fun resolveIntent(intent: Intent) {
         val validActions = listOf(
             NfcAdapter.ACTION_TAG_DISCOVERED,
@@ -92,172 +110,55 @@ class MainActivity : AppCompatActivity() {
             NfcAdapter.ACTION_NDEF_DISCOVERED
         )
         if (intent.action in validActions) {
-            val rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
-            val messages = mutableListOf<NdefMessage>()
-            val empty = ByteArray(0)
-            val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)
             val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
-            var isSuica = false
-            for (tech in tag.techList) {
-                // If card is a Felica
-                if (tech == NfcF::class.java.name) {
-                    val nfcF = NfcF.get(tag)
-                    val systemCode = toHex(nfcF.systemCode)
-                    if (systemCode == "03 00") {
-                        isSuica = true
-                    }
-                }
+
+            if (!isJapaneseICTag(tag)) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Card Not Supported")
+                    .setMessage("This is not a Japanese IC card.")
+                    .setPositiveButton("Okay") { _, _ -> }.show()
+                return
             }
-            Log.d("MainActivity", "isSuica: $isSuica")
-            if (isSuica) {
-                val payload = dumpTagData(tag).toByteArray()
-                val record = NdefRecord(NdefRecord.TNF_UNKNOWN, empty, id, payload)
+
+            val suicaData = Suica.extractData(tag)
+
+            if (suicaData != null) {
+                val payload = dumpTagData(suicaData).toByteArray()
+                val record = NdefRecord(NdefRecord.TNF_UNKNOWN, byteArrayOf(), tag.id, payload)
                 val msg = NdefMessage(arrayOf(record))
-                messages.add(msg)
+                buildTagViews(listOf(msg))
             } else {
                 MaterialAlertDialogBuilder(this)
-                    .setTitle("Wrong Card Type")
-                    .setMessage("This is not a Japanese IC card")
-                    .setPositiveButton("Okay") { dialog, which ->
-                    }.show()
-            }
-            buildTagViews(messages)
-        }
-    }
-
-    private fun dumpTagData(tag: Tag): String {
-        val sb = StringBuilder()
-        val id = tag.id
-        sb.append("ID (hex): ").append(toHex(id)).append('\n')
-        sb.append("ID (reversed hex): ").append(toReversedHex(id)).append('\n')
-        sb.append("ID (dec): ").append(toDec(id)).append('\n')
-        sb.append("ID (reversed dec): ").append(toReversedDec(id)).append('\n')
-        val prefix = "android.nfc.tech."
-        sb.append("Technologies: ")
-        for (tech in tag.techList) {
-            sb.append(tech.substring(prefix.length))
-            sb.append(", ")
-        }
-        sb.delete(sb.length - 2, sb.length)
-        sb.append(extractFelica(tag))
-        return sb.toString()
-    }
-
-    private fun extractFelica(tag: Tag): String {
-        val sb = StringBuilder()
-        val nfcF = NfcF.get(tag)
-        try {
-            nfcF.connect()
-            val systemCode = toHex(nfcF.systemCode)
-            sb.appendLine("\nNFC-F / FeliCa:")
-            sb.appendLine("  Manufacturer: ${toHex(nfcF.manufacturer)}")
-            sb.appendLine("  System Code: $systemCode")
-
-            //Read History
-            sb.append(readSuicaHistory(nfcF))
-
-        } catch (e: IOException) {
-            sb.appendLine("\nNFC-F / FeliCa error: ${e.message}")
-        } finally {
-            if (nfcF.isConnected) {
-                nfcF.close()
+                    .setTitle("No Data Found")
+                    .setMessage("This card does not contain any data")
+                    .setPositiveButton("Okay") { _, _ -> }.show()
             }
         }
-        return sb.toString()
     }
 
-    private fun readSuicaHistory(nfcF: NfcF): String {
+    private fun dumpTagData(suicaData: SuicaData): String {
         val sb = StringBuilder()
-        sb.appendLine("  IC Card History:")
-        try {
-            val idm = nfcF.tag.id
-            val serviceCode = 0x090f
-            val numBlocks = 20
-
-            // Read 20 history blocks
-            for (i in 0 until numBlocks) {
-                val cmdPacket = mutableListOf<Byte>()
-                cmdPacket.add(0x06) // Command: Read Without Encryption
-                cmdPacket.addAll(idm.toList())
-                cmdPacket.add(1) // Number of Services
-                // Service Code (little-endian)
-                cmdPacket.add((serviceCode and 0xFF).toByte())
-                cmdPacket.add((serviceCode shr 8 and 0xFF).toByte())
-                cmdPacket.add(1) // Number of Blocks to read
-                cmdPacket.add(0x80.toByte()) // 2-byte block list element
-                cmdPacket.add(i.toByte())    // block number
-
-                // Prepend the length byte
-                val readCmd = ByteArray(cmdPacket.size + 1)
-                readCmd[0] = (cmdPacket.size + 1).toByte()
-                System.arraycopy(cmdPacket.toByteArray(), 0, readCmd, 1, cmdPacket.size)
-
-                val response = nfcF.transceive(readCmd)
-
-                // Response[10] is status flag 1, 0x00 means success
-                if (response.size > 12 && response[10] == 0x00.toByte()) {
-                    // Block data starts at byte 13 and is 16 bytes long
-                    val blockData = response.copyOfRange(13, 13 + 16)
-                    // For now, just dumping the raw hex data as requested.
-                    sb.appendLine("    Block $i: ${toHex(blockData)}")
-                } else {
-                    sb.appendLine("    Block $i: Read failed")
-                    break
+        sb.appendLine("Card ID: ${suicaData.cardId}")
+        sb.appendLine("Balance: ¥${suicaData.balance ?: "N/A"}")
+        sb.appendLine("\nTechnologies: FeliCa")
+        sb.appendLine("  Manufacturer: ${suicaData.manufacturer}")
+        sb.appendLine("  System Code: ${suicaData.systemCode}")
+        sb.appendLine("\n  IC Card History:")
+        if (suicaData.transactionHistory.isEmpty()) {
+            sb.appendLine("    No history found.")
+        } else {
+            suicaData.transactionHistory.forEachIndexed { i, block ->
+                sb.appendLine("    Block $i:")
+                sb.appendLine("      Console: ${block.consoleType}, Process: ${block.processType}")
+                sb.appendLine("      Date: ${block.date}, Balance: ¥${block.balance}")
+                if (block.entryStationCode != null || block.exitStationCode != null) {
+                    sb.appendLine("      Entry Station: ${block.entryStationCode ?: "-"}, Exit Station: ${block.exitStationCode ?: "-"}")
                 }
             }
-        } catch (e: IOException) {
-            sb.appendLine("    Error reading history: ${e.message}")
         }
         return sb.toString()
     }
 
-    private fun toHex(bytes: ByteArray): String {
-        val sb = StringBuilder()
-        for (i in bytes.indices.reversed()) {
-            val b = bytes[i].toInt() and 0xff
-            if (b < 0x10) sb.append('0')
-            sb.append(Integer.toHexString(b))
-            if (i > 0) {
-                sb.append(" ")
-            }
-        }
-        return sb.toString()
-    }
-
-    private fun toReversedHex(bytes: ByteArray): String {
-        val sb = StringBuilder()
-        for (i in bytes.indices) {
-            if (i > 0) {
-                sb.append(" ")
-            }
-            val b = bytes[i].toInt() and 0xff
-            if (b < 0x10) sb.append('0')
-            sb.append(Integer.toHexString(b))
-        }
-        return sb.toString()
-    }
-
-    private fun toDec(bytes: ByteArray): Long {
-        var result: Long = 0
-        var factor: Long = 1
-        for (i in bytes.indices) {
-            val value = bytes[i].toLong() and 0xffL
-            result += value * factor
-            factor *= 256L
-        }
-        return result
-    }
-
-    private fun toReversedDec(bytes: ByteArray): Long {
-        var result: Long = 0
-        var factor: Long = 1
-        for (i in bytes.indices.reversed()) {
-            val value = bytes[i].toLong() and 0xffL
-            result += value * factor
-            factor *= 256L
-        }
-        return result
-    }
 
     private fun buildTagViews(msgs: List<NdefMessage>) {
         if (msgs.isEmpty()) {
@@ -266,8 +167,9 @@ class MainActivity : AppCompatActivity() {
         val inflater = LayoutInflater.from(this)
         val content = tagList
 
-        // Parse the first message in the list
-        // Build views for all of the sub records
+        // Clear existing views
+        clearTags()
+
         val now = Date()
         val records = NdefMessageParser.parse(msgs[0])
         val size = records.size
@@ -297,12 +199,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun clearTags() {
-        for (i in tagList!!.childCount - 1 downTo 0) {
-            val view = tagList!!.getChildAt(i)
-            if (view.id != R.id.tag_viewer_text) {
-                tagList!!.removeViewAt(i)
-            }
-        }
+        tagList?.removeAllViews()
     }
 
     companion object {
