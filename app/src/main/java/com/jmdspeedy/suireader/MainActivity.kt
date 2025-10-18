@@ -168,7 +168,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun readSuicaHistory(nfcF: NfcF): String {
         val sb = StringBuilder()
-        sb.appendLine("  Suica/Pasmo History:")
+        sb.appendLine("  IC Card History:")
         try {
             val idm = nfcF.tag.id
             val serviceCode = 0x090f
