@@ -1,9 +1,14 @@
 package com.jmdspeedy.suireader
 
+import android.content.Context
 import android.nfc.Tag
 import android.nfc.tech.NfcF
 import android.util.Log
+import java.io.BufferedReader
 import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.util.*
 
 data class HistoryBlock(
     val consoleType: String,
@@ -11,7 +16,11 @@ data class HistoryBlock(
     val date: String,
     val balance: Int,
     val entryStationCode: String?,
-    val exitStationCode: String?
+    val exitStationCode: String?,
+    val entryStationName: String?,
+    val exitStationName: String?,
+    val entryAreaCode: Int?,
+    val exitAreaCode: Int?
 )
 
 data class SuicaData(
@@ -23,6 +32,25 @@ data class SuicaData(
 )
 
 object Suica {
+    private var stationMap: Map<String, String>? = null
+
+    /**
+     * Initializes the station map by loading data from StationCode.csv in the assets folder.
+     * This should be called once, preferably in your Application class or main activity's onCreate.
+     */
+    fun init(context: Context) {
+        if (stationMap == null) {
+            try {
+                context.assets.open("StationCode.csv").use { inputStream ->
+                    stationMap = loadStationMapFromCsv(inputStream)
+                    Log.d("Suica", "Station map loaded with ${stationMap?.size} entries.")
+                }
+            } catch (e: IOException) {
+                Log.e("Suica", "Error loading StationCode.csv. Make sure it's in the app/src/main/assets folder.", e)
+            }
+        }
+    }
+
     fun extractData(tag: Tag): SuicaData? {
         val nfcF = NfcF.get(tag)
         return try {
@@ -142,19 +170,81 @@ object Suica {
 
         var entryStationCode: String? = null
         var exitStationCode: String? = null
+        var entryAreaCode: Int? = null
+        var exitAreaCode: Int? = null
         if (blockData[1].toInt() and 0xFF in listOf(0x01, 0x05, 0x06, 0x0D, 0x0F)) {
-            entryStationCode = String.format("%02X%02X", blockData[6], blockData[7])
-            exitStationCode = String.format("%02X%02X", blockData[8], blockData[9])
+            val entryLineCode = blockData[6].toInt() and 0xFF
+            val entryStationNum = blockData[7].toInt() and 0xFF
+            val exitLineCode = blockData[8].toInt() and 0xFF
+            val exitStationNum = blockData[9].toInt() and 0xFF
+            val regionByte = blockData[15].toInt() and 0xFF
+            entryAreaCode = (regionByte shr 6) and 0x03
+            exitAreaCode = (regionByte shr 4) and 0x03
+
+            entryStationCode = String.format("%02d%02x%02x", entryAreaCode, entryLineCode, entryStationNum)
+            exitStationCode = String.format("%02d%02x%02x", exitAreaCode, exitLineCode, exitStationNum)
         }
 
-        return HistoryBlock(
+        val entryStationName = entryStationCode?.let { lookupStationNameByHexCode(it) }
+        val exitStationName = exitStationCode?.let { lookupStationNameByHexCode(it) }
+
+        val historyBlock = HistoryBlock(
             consoleType = consoleType,
             processType = processType,
             date = date,
             balance = balance,
             entryStationCode = entryStationCode,
-            exitStationCode = exitStationCode
+            exitStationCode = exitStationCode,
+            entryStationName = entryStationName,
+            exitStationName = exitStationName,
+            entryAreaCode = entryAreaCode,
+            exitAreaCode = exitAreaCode
         )
+
+        logHistoryBlockDetails(historyBlock)
+
+        return historyBlock
+    }
+
+    private fun logHistoryBlockDetails(block: HistoryBlock) {
+        Log.d("SuicaDecoder", "--- Decoding History Block ---")
+        Log.d("SuicaDecoder", "Console Type: ${block.consoleType}")
+        Log.d("SuicaDecoder", "Process Type: ${block.processType}")
+        Log.d("SuicaDecoder", "Date: ${block.date}")
+        Log.d("SuicaDecoder", "Balance: ¥${block.balance}")
+        Log.d("SuicaDecoder", "Entry Area: ${block.entryAreaCode}")
+        Log.d("SuicaDecoder", "Entry Station Code: ${block.entryStationCode}")
+        Log.d("SuicaDecoder", "Entry Station Name: ${block.entryStationName ?: "Not found"}")
+        Log.d("SuicaDecoder", "Exit Area: ${block.exitAreaCode}")
+        Log.d("SuicaDecoder", "Exit Station Code: ${block.exitStationCode}")
+        Log.d("SuicaDecoder", "Exit Station Name: ${block.exitStationName ?: "Not found"}")
+        Log.d("SuicaDecoder", "-----------------------------")
+    }
+
+    private fun loadStationMapFromCsv(input: InputStream): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        BufferedReader(InputStreamReader(input, Charsets.UTF_8)).use { br ->
+            br.lineSequence()
+                .drop(1) // Skip header row
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .forEach { line ->
+                    val cols = line.split(",")
+                    if (cols.size >= 4) {
+                        val hexCode = cols[0].trim()
+                        val stationName = cols[3].trim()
+                        if (hexCode.isNotEmpty() && stationName.isNotEmpty()) {
+                            map[hexCode.lowercase(Locale.getDefault())] = stationName
+                        }
+                    }
+                }
+        }
+        return map
+    }
+
+    private fun lookupStationNameByHexCode(hexCode: String): String? {
+        val currentStationMap = stationMap ?: return null
+        return currentStationMap[hexCode.lowercase(Locale.getDefault())]
     }
 
     internal fun toHex(bytes: ByteArray): String {

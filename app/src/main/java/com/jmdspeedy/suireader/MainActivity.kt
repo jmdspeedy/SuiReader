@@ -32,6 +32,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         tagList = findViewById<View>(R.id.list) as LinearLayout
+
+        // Initialize the Suica station map
+        Suica.init(this)
+
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         // for virtual device testing, comment this out
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                 if (block.entryStationCode != null || block.exitStationCode != null) {
                     sb.appendLine("      Entry Station: ${block.entryStationCode ?: "-"}, Exit Station: ${block.exitStationCode ?: "-"}")
                 }
+                sb.appendLine("      Entry Station Name: ${block.entryStationName ?: "-"}, Exit Station Name: ${block.exitStationName ?: "-"}")
             }
         }
         return sb.toString()
