@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.github.muellerma.nfcreader'
+    namespace 'com.jmdspeedy.suireader'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.github.muellerma.nfcreader"
+        applicationId "com.jmdspeedy.suireader"
         minSdk 21
         targetSdk 33
         versionCode 2

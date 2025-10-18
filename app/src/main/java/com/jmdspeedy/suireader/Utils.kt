@@ -1,4 +1,4 @@
-package com.github.muellerma.nfcreader
+package com.jmdspeedy.suireader
 
 import android.app.PendingIntent
 import android.content.Intent

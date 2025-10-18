@@ -1,4 +1,4 @@
-package com.github.muellerma.nfcreader
+package com.jmdspeedy.suireader
 
 import android.app.Application
 import com.google.android.material.color.DynamicColors

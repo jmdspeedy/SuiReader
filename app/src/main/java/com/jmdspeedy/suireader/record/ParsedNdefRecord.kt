@@ -1,4 +1,4 @@
-package com.github.muellerma.nfcreader.record
+package com.jmdspeedy.suireader.record
 
 import android.app.Activity
 import android.view.LayoutInflater

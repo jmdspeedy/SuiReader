@@ -1,4 +1,4 @@
-package com.github.muellerma.nfcreader
+package com.jmdspeedy.suireader
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -17,8 +17,9 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.github.muellerma.nfcreader.record.ParsedNdefRecord
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.jmdspeedy.suireader.record.ParsedNdefRecord
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,10 +33,11 @@ class MainActivity : AppCompatActivity() {
         tagList = findViewById<View>(R.id.list) as LinearLayout
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        if (nfcAdapter == null) {
-            showNoNfcDialog()
-            return
-        }
+        // for virtual device testing, comment this out
+//        if (nfcAdapter == null) {
+//            showNoNfcDialog()
+//            return
+//        }
     }
 
     override fun onResume() {
@@ -47,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             this,
             0,
             Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-            PendingIntent_Mutable
+            PendingIntent.FLAG_MUTABLE
         )
         nfcAdapter?.enableForegroundDispatch(this, pendingIntent, null, null)
     }
@@ -100,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                 // Unknown tag type
                 val empty = ByteArray(0)
                 val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)
-                val tag = intent.parcelable<Tag>(NfcAdapter.EXTRA_TAG) ?: return
+                val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
                 val payload = dumpTagData(tag).toByteArray()
                 val record = NdefRecord(NdefRecord.TNF_UNKNOWN, empty, id, payload)
                 val msg = NdefMessage(arrayOf(record))
@@ -128,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         for (tech in tag.techList) {
             // If card is a Felica
             if (tech == NfcF::class.java.name) {
-                sb.append(extractFelica(tag)).append("here\n")
+                sb.append(extractFelica(tag))
             }
         }
         return sb.toString()
@@ -136,20 +138,73 @@ class MainActivity : AppCompatActivity() {
 
     private fun extractFelica(tag: Tag): String {
         val sb = StringBuilder()
-        sb.append('\n')
         val nfcF = NfcF.get(tag)
-        // Check if Japan IC card
-        val sysCode = toHex(nfcF.systemCode)
-        if (sysCode == "03 00") {
-            try {
-                sb.appendLine("NFC-F / FeliCa:")
-                sb.appendLine("Manufacturer: ${toHex(nfcF.manufacturer)}")
-                sb.appendLine("System Code: ${toHex(nfcF.systemCode)}")
-            } catch (e: Exception) {
-                sb.appendLine("NFC-F / FeliCa error: ${e.message}")
+        try {
+            nfcF.connect()
+            val systemCode = toHex(nfcF.systemCode)
+            sb.appendLine("\nNFC-F / FeliCa:")
+            sb.appendLine("  Manufacturer: ${toHex(nfcF.manufacturer)}")
+            sb.appendLine("  System Code: $systemCode")
+
+            if (systemCode == "03 00") { // Common system code for transportation IC cards
+                // Request Block 0 from Service Code 0x008B (Card Attribute Information)
+                val idm = nfcF.tag.id
             }
-        } else {
-            sb.appendLine("This IC Card is not supported")
+
+            //Read History if applicable
+            sb.append(readSuicaHistory(nfcF))
+
+        } catch (e: IOException) {
+            sb.appendLine("\nNFC-F / FeliCa error: ${e.message}")
+        } finally {
+            if (nfcF.isConnected) {
+                nfcF.close()
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun readSuicaHistory(nfcF: NfcF): String {
+        val sb = StringBuilder()
+        sb.appendLine("  Suica/Pasmo History:")
+        try {
+            val idm = nfcF.tag.id
+            val serviceCode = 0x090f
+            val numBlocks = 20
+
+            // Read 20 history blocks
+            for (i in 0 until numBlocks) {
+                val cmdPacket = mutableListOf<Byte>()
+                cmdPacket.add(0x06) // Command: Read Without Encryption
+                cmdPacket.addAll(idm.toList())
+                cmdPacket.add(1) // Number of Services
+                // Service Code (little-endian)
+                cmdPacket.add((serviceCode and 0xFF).toByte())
+                cmdPacket.add((serviceCode shr 8 and 0xFF).toByte())
+                cmdPacket.add(1) // Number of Blocks to read
+                cmdPacket.add(0x80.toByte()) // 2-byte block list element
+                cmdPacket.add(i.toByte())    // block number
+
+                // Prepend the length byte
+                val readCmd = ByteArray(cmdPacket.size + 1)
+                readCmd[0] = (cmdPacket.size + 1).toByte()
+                System.arraycopy(cmdPacket.toByteArray(), 0, readCmd, 1, cmdPacket.size)
+
+                val response = nfcF.transceive(readCmd)
+
+                // Response[10] is status flag 1, 0x00 means success
+                if (response.size > 12 && response[10] == 0x00.toByte()) {
+                    // Block data starts at byte 13 and is 16 bytes long
+                    val blockData = response.copyOfRange(13, 13 + 16)
+                    // For now, just dumping the raw hex data as requested.
+                    sb.appendLine("    Block $i: ${toHex(blockData)}")
+                } else {
+                    sb.appendLine("    Block $i: Read failed")
+                    break
+                }
+            }
+        } catch (e: IOException) {
+            sb.appendLine("    Error reading history: ${e.message}")
         }
         return sb.toString()
     }
