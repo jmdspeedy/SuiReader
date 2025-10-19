@@ -1,30 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Designed for clarity and maintainability.
+  - Uses Material 3 components and theme attributes for a modern, consistent look.
+  - Employs standardized typography and spacing for better visual hierarchy.
+  - Uses tools attributes for better previewing in Android Studio.
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="?attr/colorSurface"
     tools:context=".MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp">
 
             <!-- Suica Card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/suica_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#A5D6A7"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardBackgroundColor="?attr/colorPrimary"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="0dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -35,25 +45,27 @@
                             android:id="@+id/initial_scan_view"
                             android:layout_width="match_parent"
                             android:layout_height="282dp"
-                            android:orientation="vertical"
                             android:gravity="center"
-                            android:padding="64dp"
+                            android:orientation="vertical"
+                            android:padding="32dp"
                             android:visibility="visible"
-                            android:background="#A4D568">
+                            tools:ignore="UseCompoundDrawables">
 
                         <ImageView
-                                android:layout_width="80dp"
-                                android:layout_height="80dp"
-                                android:contentDescription="TODO"
-                                android:src="@android:drawable/ic_menu_rotate"
-                                app:tint="@android:color/white" />
+                                android:layout_width="200dp"
+                                android:layout_height="150dp"
+                                android:contentDescription="@string/hold_your_ic_card_to_the_reader"
+                                android:src="@drawable/ic_nfc"
+                                app:tint="?attr/colorOnPrimary" />
 
                         <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="16dp"
+                                android:layout_marginTop="24dp"
                                 android:text="@string/hold_your_ic_card_to_the_reader"
-                                android:textColor="@android:color/white"
+                                android:textAlignment="center"
+                                android:textAppearance="?attr/textAppearanceTitleMedium"
+                                android:textColor="?attr/colorOnPrimary"
                                 android:textSize="14sp" />
 
                     </LinearLayout>
@@ -71,8 +83,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/suica"
-                            android:textColor="@android:color/white"
-                            android:textSize="16sp"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorOnPrimary"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -80,13 +92,12 @@
                             android:id="@+id/balance_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            tools:text="¥3,240"
-                            android:textColor="@android:color/white"
-                            android:textSize="40sp"
-                            android:textStyle="bold"
+                            android:layout_marginTop="4dp"
+                            android:textAppearance="?attr/textAppearanceDisplayMedium"
+                            android:textColor="?attr/colorOnPrimary"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/suica_label" />
+                            app:layout_constraintTop_toBottomOf="@+id/suica_label"
+                            tools:text="¥3,240" />
 
                         <!-- This space adds extra height to the card -->
                         <Space
@@ -95,19 +106,22 @@
                             app:layout_constraintTop_toBottomOf="@+id/balance_text"
                             app:layout_constraintBottom_toBottomOf="parent"/>
 
-                        <ImageView
+                        <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/penguin_logo"
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:src="@android:drawable/sym_def_app_icon"
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:src="@drawable/penguin"
+                            app:shapeAppearance="@style/ShapeAppearance.App.CircleImageView"
+                            android:background="?attr/colorPrimaryVariant"
+                            android:elevation="10dp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            android:contentDescription="Suica Penguin Logo" />
+                            android:contentDescription="@string/suica" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </FrameLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- History List -->
             <TextView
@@ -115,11 +129,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/history"
-                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                android:layout_marginTop="24dp"
+                android:textAppearance="?attr/textAppearanceTitleLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="32dp"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"
-                android:textColor="@android:color/black"/>
+                tools:visibility="visible"/>
 
             <LinearLayout
                 android:id="@+id/list"

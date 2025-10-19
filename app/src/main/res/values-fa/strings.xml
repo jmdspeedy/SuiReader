@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Translation instructions can be found in the Readme -->
-<resources
-        xmlns:tools="http://schemas.android.com/tools"
-        tools:ignore="MissingTranslation, ExtraTranslation">
-    <string name="app_name">SuiReader</string>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation, ExtraTranslation">
+    <string name="app_name">دستگاه NFC</string>
     <string name="intro_message">This is a simple app to read various tags (NDEF, RFID, FeliCa, ISO 14443, etc).\n\nYou use it by holding a tag/card against the back of your device.\n\nThis app is a fork of https://github.com/nadam/nfc-reader</string>
     <string name="no_nfc">NFC isn\'t supported on this device</string>
     <string name="clear_all">Clear all</string>
     <string name="close_app">Close app</string>
-    <string name="hold_your_ic_card_to_the_reader">HOLD YOUR IC CARD TO THE READER</string>
-    <string name="suica">SUICA</string>
-    <string name="history">History</string>
-    <string name="icon_of_history_block">icon of history block</string>
 </resources>

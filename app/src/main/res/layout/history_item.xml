@@ -17,9 +17,11 @@
                 android:id="@+id/icon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="@string/icon_of_history_block"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:tint="@android:color/white"
                 tools:src="@android:drawable/ic_dialog_info" />
 
         <TextView

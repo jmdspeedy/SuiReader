@@ -1,5 +1,6 @@
 package com.jmdspeedy.suireader
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.nfc.Tag
 import android.nfc.tech.NfcF
@@ -124,6 +125,7 @@ object Suica {
         return history
     }
 
+    @SuppressLint("DefaultLocale")
     private fun decodeSuicaHistoryBlock(blockData: ByteArray, nextBlockData: ByteArray?): HistoryBlock {
         val consoleType = when (val type = blockData[0].toInt() and 0xFF) {
             0x03 -> "Fare adjustment machine"

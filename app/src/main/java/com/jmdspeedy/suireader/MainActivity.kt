@@ -209,21 +209,21 @@ class MainActivity : AppCompatActivity() {
                 // Set icon and description based on process type
                 when (block.processType) {
                     "Charge", "Auto-charge" -> {
-                        icon.setImageResource(android.R.drawable.ic_input_add)
+                        icon.setImageResource(R.drawable.charge)
                         descriptionText.text = block.processType
                     }
                     "Bus" -> {
-//                        icon.setImageResource(android.R.drawable.ic_menu_directions_bus)
+                        icon.setImageResource(R.drawable.bus)
                         descriptionText.text = "Local Bus"
                     }
-                    else -> { // Train icon for most other cases
-//                        icon.setImageResource(android.R.drawable.ic_menu_directions_railway)
+                    else -> { // Train
+                        icon.setImageResource(R.drawable.train)
                         descriptionText.text = "${block.entryStationName ?: "Station"} → ${block.exitStationName ?: "Station"}"
                     }
                 }
                 when (block.consoleType) {
                     "Vending machine/POS", "Vending machine" -> {
-                        icon.setImageResource(android.R.drawable.ic_menu_crop)
+                        icon.setImageResource(R.drawable.shopping)
                         descriptionText.text = "Purchase"
                     }
                 }
