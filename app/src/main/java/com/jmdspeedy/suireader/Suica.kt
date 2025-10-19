@@ -15,6 +15,7 @@ data class HistoryBlock(
     val processType: String,
     val date: String,
     val balance: Int,
+    val transactionCost: Int?,
     val entryStationCode: String?,
     val exitStationCode: String?,
     val entryStationName: String?,
@@ -78,7 +79,7 @@ object Suica {
     }
 
     private fun readSuicaHistory(nfcF: NfcF): List<HistoryBlock> {
-        val history = mutableListOf<HistoryBlock>()
+        val rawHistoryBlocks = mutableListOf<ByteArray>()
         try {
             val idm = nfcF.tag.id
             val serviceCode = 0x090f
@@ -104,7 +105,7 @@ object Suica {
                 if (response.size > 12 && response[10] == 0x00.toByte()) {
                     val blockData = response.copyOfRange(13, 13 + 16)
                     if (blockData.any { it != 0.toByte() }) {
-                        history.add(decodeSuicaHistoryBlock(blockData))
+                        rawHistoryBlocks.add(blockData)
                     }
                 } else {
                     break
@@ -113,10 +114,17 @@ object Suica {
         } catch (e: IOException) {
             Log.e("Suica", "Error reading Suica history: ${e.message}")
         }
+
+        val history = mutableListOf<HistoryBlock>()
+        for (i in rawHistoryBlocks.indices) {
+            val nextBlockData = if (i + 1 < rawHistoryBlocks.size) rawHistoryBlocks[i + 1] else null
+            history.add(decodeSuicaHistoryBlock(rawHistoryBlocks[i], nextBlockData))
+        }
+
         return history
     }
 
-    private fun decodeSuicaHistoryBlock(blockData: ByteArray): HistoryBlock {
+    private fun decodeSuicaHistoryBlock(blockData: ByteArray, nextBlockData: ByteArray?): HistoryBlock {
         val consoleType = when (val type = blockData[0].toInt() and 0xFF) {
             0x03 -> "Fare adjustment machine"
             0x04 -> "Portable terminal"
@@ -150,8 +158,8 @@ object Suica {
             0x06 -> "Exit at window"
             0x07 -> "New card"
             0x08 -> "Deduction at window"
-            0x0D -> "Bus (PiTaPa?)"
-            0x0F -> "Bus (IruCa?)"
+            0x0D -> "Bus"
+            0x0F -> "Bus"
             0x11 -> "Reissue"
             0x13 -> "Window operation"
             0x14 -> "Auto-charge"
@@ -167,6 +175,13 @@ object Suica {
         val date = "$year-$month-$day"
 
         val balance = (blockData[11].toInt() and 0xFF shl 8) or (blockData[10].toInt() and 0xFF)
+
+        val transactionCost = if (nextBlockData != null) {
+            val nextBalance = (nextBlockData[11].toInt() and 0xFF shl 8) or (nextBlockData[10].toInt() and 0xFF)
+            balance - nextBalance
+        } else {
+            null
+        }
 
         var entryStationCode: String? = null
         var exitStationCode: String? = null
@@ -193,6 +208,7 @@ object Suica {
             processType = processType,
             date = date,
             balance = balance,
+            transactionCost = transactionCost,
             entryStationCode = entryStationCode,
             exitStationCode = exitStationCode,
             entryStationName = entryStationName,
@@ -212,6 +228,7 @@ object Suica {
         Log.d("SuicaDecoder", "Process Type: ${block.processType}")
         Log.d("SuicaDecoder", "Date: ${block.date}")
         Log.d("SuicaDecoder", "Balance: ¥${block.balance}")
+        Log.d("SuicaDecoder", "Transaction Cost: ¥${block.transactionCost ?: "Not found"}")
         Log.d("SuicaDecoder", "Entry Area: ${block.entryAreaCode}")
         Log.d("SuicaDecoder", "Entry Station Code: ${block.entryStationCode}")
         Log.d("SuicaDecoder", "Entry Station Name: ${block.entryStationName ?: "Not found"}")

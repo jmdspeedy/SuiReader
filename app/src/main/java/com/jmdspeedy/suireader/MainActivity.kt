@@ -1,5 +1,6 @@
 package com.jmdspeedy.suireader
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.nfc.NfcAdapter
@@ -45,11 +46,14 @@ class MainActivity : AppCompatActivity() {
         suicaDataView = findViewById(R.id.suica_data_view)
         historyTitle = findViewById(R.id.history_title)
 
-        // Initialize the Suica station map
-        Suica.init(this)
-
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        // Initialize the Suica station map
+        Suica.init(this)
+        if (nfcAdapter == null) {
+            showNoNfcDialog()
+            return
+        }
     }
 
     override fun onResume() {
@@ -164,6 +168,7 @@ class MainActivity : AppCompatActivity() {
         inView.visibility = View.VISIBLE
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUi(suicaData: SuicaData) {
         // Animate from initial view to data view
         crossfadeViews(suicaDataView!!, initialScanView!!)
@@ -185,35 +190,41 @@ class MainActivity : AppCompatActivity() {
         } else {
             suicaData.transactionHistory.forEach { block ->
                 val historyView = inflater.inflate(R.layout.history_item, historyList, false)
+
                 val icon = historyView.findViewById<ImageView>(R.id.icon)
                 val dateText = historyView.findViewById<TextView>(R.id.date_text)
                 val descriptionText = historyView.findViewById<TextView>(R.id.description_text)
-                val amountText = historyView.findViewById<TextView>(R.id.amount_text)
+                val transactionCostText = historyView.findViewById<TextView>(R.id.transaction_cost_text)
+                val balanceText = historyView.findViewById<TextView>(R.id.balance_text)
 
                 dateText.text = block.date
+                balanceText.text = NumberFormat.getCurrencyInstance(Locale.JAPAN).format(block.balance)
+
+                val formattedTransactionCost = block.transactionCost?.let { cost ->
+                    val plusOrMinus = if (cost > 0) "+" else ""
+                    plusOrMinus + NumberFormat.getCurrencyInstance(Locale.JAPAN).format(cost)
+                } ?: ""
+                transactionCostText.text = formattedTransactionCost
 
                 // Set icon and description based on process type
                 when (block.processType) {
                     "Charge", "Auto-charge" -> {
                         icon.setImageResource(android.R.drawable.ic_input_add)
                         descriptionText.text = block.processType
-                        amountText.text = "+${NumberFormat.getCurrencyInstance(Locale.JAPAN).format(block.balance)}"
-//                        amountText.setTextColor(resources.getColor(R.color.teal_700, theme))
                     }
-                    "Bus (PiTaPa?)", "Bus (IruCa?)" -> {
+                    "Bus" -> {
 //                        icon.setImageResource(android.R.drawable.ic_menu_directions_bus)
                         descriptionText.text = "Local Bus"
-                        amountText.text = "-¥${block.balance}" // Assuming bus rides are deductions
-                    }
-                    "Vending machine/POS", "Vending machine" -> {
-                        icon.setImageResource(android.R.drawable.ic_menu_crop)
-                        descriptionText.text = "Purchase"
-                         amountText.text = "-¥${block.balance}"
                     }
                     else -> { // Train icon for most other cases
 //                        icon.setImageResource(android.R.drawable.ic_menu_directions_railway)
                         descriptionText.text = "${block.entryStationName ?: "Station"} → ${block.exitStationName ?: "Station"}"
-                        amountText.text = "-¥${block.balance}"
+                    }
+                }
+                when (block.consoleType) {
+                    "Vending machine/POS", "Vending machine" -> {
+                        icon.setImageResource(android.R.drawable.ic_menu_crop)
+                        descriptionText.text = "Purchase"
                     }
                 }
 
