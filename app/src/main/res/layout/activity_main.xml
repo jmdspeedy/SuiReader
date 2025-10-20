@@ -10,8 +10,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="#030c2d"
     tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="2">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/background_image"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:src="@drawable/background"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null" />
+
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -31,10 +53,11 @@
                 android:id="@+id/suica_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/colorPrimary"
+                app:cardBackgroundColor="#1C2A3A"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
-                app:strokeWidth="0dp">
+                app:strokeColor="#5580D8FF"
+                app:strokeWidth="1dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -52,11 +75,11 @@
                             tools:ignore="UseCompoundDrawables">
 
                         <ImageView
-                                android:layout_width="200dp"
+                                android:layout_width="150dp"
                                 android:layout_height="150dp"
                                 android:contentDescription="@string/hold_your_ic_card_to_the_reader"
                                 android:src="@drawable/ic_nfc"
-                                app:tint="?attr/colorOnPrimary" />
+                                app:tint="#80D8FF" />
 
                         <TextView
                                 android:layout_width="wrap_content"
@@ -65,7 +88,7 @@
                                 android:text="@string/hold_your_ic_card_to_the_reader"
                                 android:textAlignment="center"
                                 android:textAppearance="?attr/textAppearanceTitleMedium"
-                                android:textColor="?attr/colorOnPrimary"
+                                android:textColor="@android:color/white"
                                 android:textSize="14sp" />
 
                     </LinearLayout>
@@ -84,7 +107,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/suica"
                             android:textAppearance="?attr/textAppearanceTitleMedium"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="@android:color/white"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -94,7 +117,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:textAppearance="?attr/textAppearanceDisplayMedium"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="@android:color/white"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/suica_label"
                             tools:text="¥3,240" />

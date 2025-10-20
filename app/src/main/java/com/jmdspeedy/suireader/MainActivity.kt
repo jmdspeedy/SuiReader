@@ -3,6 +3,8 @@ package com.jmdspeedy.suireader
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.NfcF
@@ -18,6 +20,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.transition.ChangeBounds
@@ -36,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private var initialScanView: View? = null
     private var suicaDataView: View? = null
     private var historyTitle: View? = null
+    private var backgroundImage: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         initialScanView = findViewById(R.id.initial_scan_view)
         suicaDataView = findViewById(R.id.suica_data_view)
         historyTitle = findViewById(R.id.history_title)
+        backgroundImage = findViewById(R.id.background_image)
 
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -168,11 +173,31 @@ class MainActivity : AppCompatActivity() {
         inView.visibility = View.VISIBLE
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun applyBlurEffect(shouldBlur: Boolean) {
+        if (shouldBlur) {
+            backgroundImage?.setRenderEffect(
+                RenderEffect.createBlurEffect(
+                    20f,
+                    20f,
+                    Shader.TileMode.MIRROR
+                )
+            )
+        } else {
+            backgroundImage?.setRenderEffect(null)
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     private fun updateUi(suicaData: SuicaData) {
         // Animate from initial view to data view
         crossfadeViews(suicaDataView!!, initialScanView!!)
         historyTitle?.visibility = View.VISIBLE
+
+        // Apply blur effect
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            applyBlurEffect(true)
+        }
 
         // Update card info
         val formattedBalance = NumberFormat.getCurrencyInstance(Locale.JAPAN).format(suicaData.balance)
@@ -245,6 +270,9 @@ class MainActivity : AppCompatActivity() {
                 crossfadeViews(initialScanView!!, suicaDataView!!)
                 historyTitle?.visibility = View.GONE
                 historyList?.removeAllViews()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    applyBlurEffect(false)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
