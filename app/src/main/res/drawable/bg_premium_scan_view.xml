@@ -1,28 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Subtle radial gradient for depth -->
+    <!-- Base Background -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:type="radial"
                 android:gradientRadius="80%"
-                android:startColor="#1F2937" 
+                android:startColor="#1F2937"
                 android:endColor="#111827" />
         </shape>
     </item>
 
-    <!-- 
-    Placeholder for noise texture. 
-    To use, add a tileable noise PNG to your drawable folder 
-    and uncomment the following item.
-    -->
-    <!--
-    <item>
-        <bitmap 
-            android:src="@drawable/noise_texture" 
-            android:tileMode="repeat" />
+    <!-- Top Glow -->
+    <item android:height="10dp" android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#181717"
+                android:endColor="@android:color/transparent"
+                android:angle="270" />
+        </shape>
     </item>
-    -->
+
+    <!-- Bottom Glow -->
+    <item android:height="10dp" android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="@android:color/transparent"
+                android:endColor="#181717"
+                android:angle="270" />
+        </shape>
+    </item>
+    
+    <!-- Left Glow -->
+    <item android:width="10dp" android:gravity="left">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#181717"
+                android:endColor="@android:color/transparent"
+                android:angle="0" />
+        </shape>
+    </item>
+    
+    <!-- Right Glow -->
+    <item android:width="10dp" android:gravity="right">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="@android:color/transparent"
+                android:endColor="#181717"
+                android:angle="0" />
+        </shape>
+    </item>
 
 </layer-list>

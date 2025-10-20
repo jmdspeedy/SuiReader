@@ -66,10 +66,10 @@ class MainActivity : AppCompatActivity() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         // Initialize the Suica station map
         Suica.init(this)
-        if (nfcAdapter == null) {
-            showNoNfcDialog()
-            return
-        }
+//        if (nfcAdapter == null) {
+//            showNoNfcDialog()
+//            return
+//        }
     }
 
     override fun onResume() {

@@ -56,8 +56,8 @@
                 app:cardBackgroundColor="#1C2A3A"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
-                app:strokeColor="#5580D8FF"
-                app:strokeWidth="1dp">
+                app:strokeColor="#FFFFFF"
+                app:strokeWidth="0dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
