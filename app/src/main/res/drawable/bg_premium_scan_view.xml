@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Subtle radial gradient for depth -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="80%"
+                android:startColor="#1F2937" 
+                android:endColor="#111827" />
+        </shape>
+    </item>
+
+    <!-- 
+    Placeholder for noise texture. 
+    To use, add a tileable noise PNG to your drawable folder 
+    and uncomment the following item.
+    -->
+    <!--
+    <item>
+        <bitmap 
+            android:src="@drawable/noise_texture" 
+            android:tileMode="repeat" />
+    </item>
+    -->
+
+</layer-list>

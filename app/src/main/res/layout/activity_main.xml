@@ -68,6 +68,7 @@
                             android:id="@+id/initial_scan_view"
                             android:layout_width="match_parent"
                             android:layout_height="282dp"
+                            android:background="@drawable/bg_premium_scan_view"
                             android:gravity="center"
                             android:orientation="vertical"
                             android:padding="32dp"
@@ -79,7 +80,7 @@
                                 android:layout_height="150dp"
                                 android:contentDescription="@string/hold_your_ic_card_to_the_reader"
                                 android:src="@drawable/ic_nfc"
-                                app:tint="#80D8FF" />
+                                app:tint="#FFFFFF" />
 
                         <TextView
                                 android:layout_width="wrap_content"
@@ -89,6 +90,7 @@
                                 android:textAlignment="center"
                                 android:textAppearance="?attr/textAppearanceTitleMedium"
                                 android:textColor="@android:color/white"
+                                android:fontFamily="sans-serif-medium"
                                 android:textSize="14sp" />
 
                     </LinearLayout>
@@ -125,7 +127,7 @@
                         <!-- This space adds extra height to the card -->
                         <Space
                             android:layout_width="match_parent"
-                            android:layout_height="24dp"
+                            android:layout_height="48dp"
                             app:layout_constraintTop_toBottomOf="@+id/balance_text"
                             app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -170,4 +172,12 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <View
+        android:id="@+id/dimming_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
