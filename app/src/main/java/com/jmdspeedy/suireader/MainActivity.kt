@@ -15,11 +15,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -50,6 +52,16 @@ class MainActivity : AppCompatActivity() {
         suicaDataView = findViewById(R.id.suica_data_view)
         historyTitle = findViewById(R.id.history_title)
         backgroundImage = findViewById(R.id.background_image)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (suicaDataView?.visibility == View.VISIBLE) {
+                    returnToInitialState()
+                } else {
+                    finish()
+                }
+            }
+        })
 
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -188,7 +200,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
+    private fun returnToInitialState() {
+        crossfadeViews(initialScanView!!, suicaDataView!!)
+        historyTitle?.visibility = View.GONE
+        historyList?.removeAllViews()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            applyBlurEffect(false)
+        }
+    }
+
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     private fun updateUi(suicaData: SuicaData) {
         // Animate from initial view to data view
         crossfadeViews(suicaDataView!!, initialScanView!!)
@@ -252,7 +273,6 @@ class MainActivity : AppCompatActivity() {
                         descriptionText.text = "Purchase"
                     }
                 }
-
                 historyList?.addView(historyView)
             }
         }
@@ -266,13 +286,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_main_clear -> {
-                // Return to initial state
-                crossfadeViews(initialScanView!!, suicaDataView!!)
-                historyTitle?.visibility = View.GONE
-                historyList?.removeAllViews()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    applyBlurEffect(false)
-                }
+                returnToInitialState()
                 true
             }
             else -> super.onOptionsItemSelected(item)

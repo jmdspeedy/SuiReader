@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_history_item_premium"
+    android:padding="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:layout_height="wrap_content">
 
         <ImageView
                 android:id="@+id/icon"
@@ -31,7 +31,8 @@
                 android:layout_marginStart="16dp"
                 app:layout_constraintStart_toEndOf="@id/icon"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Tue, Oct 26" />
+                tools:text="Tue, Oct 26"
+                android:textColor="#B0BEC5" />
 
         <TextView
                 android:id="@+id/description_text"
@@ -40,6 +41,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="@android:color/white"
                 app:layout_constraintStart_toEndOf="@id/icon"
                 app:layout_constraintTop_toBottomOf="@+id/date_text"
                 app:layout_constraintEnd_toStartOf="@+id/cost_balance_layout"
@@ -61,7 +63,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                tools:text="¥3,240" />
+                tools:text="¥3,240"
+                android:textColor="#B0BEC5" />
 
             <TextView
                     android:id="@+id/transaction_cost_text"
@@ -69,8 +72,9 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                     android:textStyle="bold"
+                    android:textColor="@android:color/white"
                     tools:text="-¥190" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</FrameLayout>
