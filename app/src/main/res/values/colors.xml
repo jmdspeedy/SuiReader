@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="app_background_dark">#030c2d</color>
+    <color name="bg_top_dark">#030c2d</color>
+    <color name="bg_top_light">#fcf3d2</color>
 
     <color name="seed">#6750A4</color>
     <color name="md_theme_light_primary">#6750A4</color>

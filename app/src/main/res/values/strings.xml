@@ -12,4 +12,7 @@
     <string name="suica">SUICA</string>
     <string name="history">History</string>
     <string name="icon_of_history_block">icon of history block</string>
+    <string name="settings_title">App Settings</string>
+    <string name="version">Version 1.0.0</string>
+    <string name="pulse_animation">Pulse animation</string>
 </resources>

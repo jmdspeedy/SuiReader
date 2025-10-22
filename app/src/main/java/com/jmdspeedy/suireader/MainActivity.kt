@@ -1,8 +1,5 @@
 package com.jmdspeedy.suireader
 
-import android.animation.Keyframe
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
@@ -32,6 +29,7 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager.beginDelayedTransition
 import androidx.transition.TransitionSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.IOException
 import java.text.NumberFormat
 import java.util.*
@@ -48,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pulse2: ImageView
     private lateinit var pulse3: ImageView
     private lateinit var whiteCircleView: View
+    private var settingsButton: FloatingActionButton? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,9 +62,14 @@ class MainActivity : AppCompatActivity() {
         pulse2 = findViewById(R.id.pulse_2)
         pulse3 = findViewById(R.id.pulse_3)
         whiteCircleView = findViewById(R.id.white_circle_view)
+        settingsButton = findViewById(R.id.settings_button)
 
         startPulseAnimation(pulse1, pulse2, pulse3)
         startIdleTiltAnimation(whiteCircleView)
+
+        settingsButton?.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -81,10 +85,10 @@ class MainActivity : AppCompatActivity() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         // Initialize the Suica station map
         Suica.init(this)
-        if (nfcAdapter == null) {
-            showNoNfcDialog()
-            return
-        }
+//        if (nfcAdapter == null) {
+//            showNoNfcDialog()
+//            return
+//        }
     }
 
     override fun onResume() {
@@ -157,6 +161,10 @@ class MainActivity : AppCompatActivity() {
             NfcAdapter.ACTION_NDEF_DISCOVERED
         )
         if (intent.action in validActions) {
+            if (intent.getBooleanExtra("intent_processed", false)) {
+                return
+            }
+
             val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
 
             if (!isJapaneseICTag(tag)) {
@@ -171,12 +179,8 @@ class MainActivity : AppCompatActivity() {
 
             if (suicaData != null) {
                 updateUi(suicaData)
-            } else {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("No Data Found")
-                    .setMessage("Could not read data from this card.")
-                    .setPositiveButton("Okay") { _, _ -> }.show()
             }
+            intent.putExtra("intent_processed", true)
         }
     }
 
@@ -184,14 +188,18 @@ class MainActivity : AppCompatActivity() {
         val suicaCard = findViewById<CardView>(R.id.suica_card)
 
         val transition = TransitionSet().apply {
+            // For the smooth resizing of the card
             addTransition(ChangeBounds())
+            // For the fading of the content
             addTransition(Fade())
-            duration = 350
+            duration = 350 // A slightly longer duration feels smoother
             interpolator = AccelerateDecelerateInterpolator()
         }
 
         beginDelayedTransition(suicaCard, transition)
 
+        // After setting up the transition, simply change the visibility.
+        // The TransitionManager will animate the changes.
         outView.visibility = View.GONE
         inView.visibility = View.VISIBLE
     }
@@ -215,6 +223,7 @@ class MainActivity : AppCompatActivity() {
         crossfadeViews(initialScanView!!, suicaDataView!!)
         historyTitle?.visibility = View.GONE
         historyList?.removeAllViews()
+        settingsButton?.visibility = View.VISIBLE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             applyBlurEffect(false)
         }
@@ -225,6 +234,7 @@ class MainActivity : AppCompatActivity() {
         // Animate from initial view to data view
         crossfadeViews(suicaDataView!!, initialScanView!!)
         historyTitle?.visibility = View.VISIBLE
+        settingsButton?.visibility = View.GONE
 
         // Apply blur effect
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

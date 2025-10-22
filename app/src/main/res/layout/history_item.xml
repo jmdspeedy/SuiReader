@@ -21,7 +21,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:tint="@android:color/white"
+                app:tint="?attr/colorOnSurface"
                 tools:src="@android:drawable/ic_dialog_info" />
 
         <TextView
@@ -32,7 +32,7 @@
                 app:layout_constraintStart_toEndOf="@id/icon"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Tue, Oct 26"
-                android:textColor="#B0BEC5" />
+                android:textColor="?attr/colorOnSurface" />
 
         <TextView
                 android:id="@+id/description_text"
@@ -41,7 +41,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                android:textColor="@android:color/white"
+                android:textColor="?attr/colorOnSurface"
                 app:layout_constraintStart_toEndOf="@id/icon"
                 app:layout_constraintTop_toBottomOf="@+id/date_text"
                 app:layout_constraintEnd_toStartOf="@+id/cost_balance_layout"
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                 tools:text="¥3,240"
-                android:textColor="#B0BEC5" />
+                android:textColor="?attr/colorAccent" />
 
             <TextView
                     android:id="@+id/transaction_cost_text"
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                     android:textStyle="bold"
-                    android:textColor="@android:color/white"
+                    android:textColor="?attr/colorOnSurface"
                     tools:text="-¥190" />
         </LinearLayout>
 

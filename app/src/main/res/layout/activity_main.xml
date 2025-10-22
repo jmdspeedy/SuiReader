@@ -10,7 +10,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#030c2d"
+    android:background="?attr/customTopBackgroundColor"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -43,10 +43,11 @@
         android:paddingBottom="16dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                  >
 
             <!-- Suica Card -->
             <com.google.android.material.card.MaterialCardView
@@ -78,12 +79,14 @@
 
                         <FrameLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                            android:layout_height="match_parent"
+                                tools:ignore="UselessParent">
 
                             <ImageView
                                     android:id="@+id/pulse_1"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
+                                    android:contentDescription="@string/pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 
@@ -91,6 +94,7 @@
                                     android:id="@+id/pulse_2"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
+                                    android:contentDescription="@string/pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 
@@ -98,6 +102,7 @@
                                     android:id="@+id/pulse_3"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
+                                    android:contentDescription="@string/pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 
@@ -143,49 +148,60 @@
                         android:id="@+id/suica_data_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="24dp"
+                        android:background="@drawable/bg_suica_card"
                         android:visibility="gone">
 
-                        <TextView
-                            android:id="@+id/suica_label"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/suica"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
-                            android:textColor="@android:color/white"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            android:id="@+id/balance_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textAppearance="?attr/textAppearanceDisplayMedium"
-                            android:textColor="@android:color/white"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/suica_label"
-                            tools:text="¥3,240" />
-
-                        <!-- This space adds extra height to the card -->
-                        <Space
+                        <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            app:layout_constraintTop_toBottomOf="@+id/balance_text"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
-
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/penguin_logo"
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:src="@drawable/penguin"
-                            app:shapeAppearance="@style/ShapeAppearance.App.CircleImageView"
-                            android:background="?attr/colorPrimaryVariant"
-                            android:elevation="10dp"
-                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_height="wrap_content"
+                            android:padding="24dp"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:contentDescription="@string/suica" />
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:id="@+id/suica_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/suica"
+                                android:textAppearance="?attr/textAppearanceTitleMedium"
+                                android:textColor="@android:color/white"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/balance_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="7dp"
+                                android:translationX="-8dp"
+                                android:textAppearance="?attr/textAppearanceDisplayMedium"
+                                android:textColor="@android:color/white"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/suica_label"
+                                tools:text="¥3,240" />
+
+                            <!-- This space adds extra height to the card -->
+                            <Space
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                app:layout_constraintTop_toBottomOf="@+id/balance_text"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/penguin_logo"
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:src="@drawable/penguin"
+                                app:shapeAppearance="@style/ShapeAppearance.App.CircleImageView"
+                                android:elevation="10dp"
+                                android:translationY="-18dp"
+                                android:translationX="-9dp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:contentDescription="@string/suica" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </FrameLayout>
@@ -215,6 +231,16 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/settings_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:backgroundTint="@android:color/transparent"
+        app:elevation="0dp"
+        app:srcCompat="@drawable/ic_settings" />
 
     <View
         android:id="@+id/dimming_overlay"
