@@ -64,8 +64,8 @@ class MainActivity : AppCompatActivity() {
         pulse3 = findViewById(R.id.pulse_3)
         whiteCircleView = findViewById(R.id.white_circle_view)
 
-        startPulseAnimation()
-        startIdleTiltAnimation()
+        startPulseAnimation(pulse1, pulse2, pulse3)
+        startIdleTiltAnimation(whiteCircleView)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -81,62 +81,11 @@ class MainActivity : AppCompatActivity() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         // Initialize the Suica station map
         Suica.init(this)
-//        if (nfcAdapter == null) {
-//            showNoNfcDialog()
-//            return
-//        }
+        if (nfcAdapter == null) {
+            showNoNfcDialog()
+            return
+        }
     }
-
-    private fun startPulseAnimation() {
-        pulse1.visibility = View.VISIBLE
-        createPulseAnimator(pulse1).start()
-        pulse2.postDelayed({
-            pulse2.visibility = View.VISIBLE
-            createPulseAnimator(pulse2).start()
-        }, 600)
-        pulse3.postDelayed({
-            pulse3.visibility = View.VISIBLE
-            createPulseAnimator(pulse3).start()
-        }, 1200)
-    }
-
-    private fun createPulseAnimator(pulse: ImageView): ObjectAnimator {
-        val animator = ObjectAnimator.ofPropertyValuesHolder(
-            pulse,
-            PropertyValuesHolder.ofFloat(View.SCALE_X, 0.5f, 3f),
-            PropertyValuesHolder.ofFloat(View.SCALE_Y, 0.5f, 3f),
-            PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f)
-        )
-        animator.duration = 4000
-        animator.repeatCount = ObjectAnimator.INFINITE
-        animator.repeatMode = ObjectAnimator.RESTART
-        animator.interpolator = AccelerateDecelerateInterpolator()
-        return animator
-    }
-
-    private fun startIdleTiltAnimation() {
-        val rotationKf = PropertyValuesHolder.ofKeyframe(View.ROTATION,
-            Keyframe.ofFloat(0f, 0f),       // Start
-            Keyframe.ofFloat(0.1f, -5f),   // Tilt left
-            Keyframe.ofFloat(0.2f, 5f),    // Tilt right
-            Keyframe.ofFloat(0.3f, -5f),   // Tilt left
-            Keyframe.ofFloat(0.4f, 5f),    // Tilt right
-            Keyframe.ofFloat(0.5f, 0f),       // Back to center
-            Keyframe.ofFloat(1f, 0f)        // Pause at center
-        )
-
-        val animator = ObjectAnimator.ofPropertyValuesHolder(
-            whiteCircleView,
-            rotationKf
-        )
-        animator.duration = 8000 // A long duration for the 'once in a while' feel
-        animator.repeatCount = ObjectAnimator.INFINITE
-        animator.repeatMode = ObjectAnimator.RESTART
-        animator.interpolator = AccelerateDecelerateInterpolator()
-        animator.startDelay = 1900
-        animator.start()
-    }
-
 
     override fun onResume() {
         super.onResume()
@@ -235,18 +184,14 @@ class MainActivity : AppCompatActivity() {
         val suicaCard = findViewById<CardView>(R.id.suica_card)
 
         val transition = TransitionSet().apply {
-            // For the smooth resizing of the card
             addTransition(ChangeBounds())
-            // For the fading of the content
             addTransition(Fade())
-            duration = 350 // A slightly longer duration feels smoother
+            duration = 350
             interpolator = AccelerateDecelerateInterpolator()
         }
 
         beginDelayedTransition(suicaCard, transition)
 
-        // After setting up the transition, simply change the visibility.
-        // The TransitionManager will animate the changes.
         outView.visibility = View.GONE
         inView.visibility = View.VISIBLE
     }
