@@ -56,6 +56,7 @@
                 app:cardBackgroundColor="#1C2A3A"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
+                android:clipChildren="true"
                 app:strokeColor="#FFFFFF"
                 app:strokeWidth="0dp">
 
@@ -71,27 +72,69 @@
                             android:background="@drawable/bg_premium_scan_view"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:padding="32dp"
+                            android:padding="0dp"
                             android:visibility="visible"
                             tools:ignore="UseCompoundDrawables">
 
-                        <ImageView
-                                android:layout_width="150dp"
-                                android:layout_height="150dp"
-                                android:contentDescription="@string/hold_your_ic_card_to_the_reader"
-                                android:src="@drawable/ic_nfc"
-                                app:tint="#FFFFFF" />
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
 
-                        <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="24dp"
-                                android:text="@string/hold_your_ic_card_to_the_reader"
-                                android:textAlignment="center"
-                                android:textAppearance="?attr/textAppearanceTitleMedium"
-                                android:textColor="@android:color/white"
-                                android:fontFamily="sans-serif-medium"
-                                android:textSize="14sp" />
+                            <ImageView
+                                    android:id="@+id/pulse_1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/pulse_circle"
+                                    android:visibility="invisible" />
+
+                            <ImageView
+                                    android:id="@+id/pulse_2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/pulse_circle"
+                                    android:visibility="invisible" />
+
+                            <ImageView
+                                    android:id="@+id/pulse_3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/pulse_circle"
+                                    android:visibility="invisible" />
+
+                            <View
+                                    android:layout_width="150dp"
+                                    android:layout_height="150dp"
+                                    android:layout_margin="5dp"
+                                    android:layout_gravity="center"
+                                    android:translationY="-25dp"
+                                    android:background="@drawable/white_circle_background" />
+
+                            <ImageView
+                                    android:id="@+id/white_circle_view"
+                                    android:layout_width="121dp"
+                                    android:layout_height="122dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="@string/hold_your_ic_card_to_the_reader"
+                                    android:src="@drawable/ic_nfc"
+                                    android:translationY="-25dp"
+                                    app:tint="#030c2d" />
+
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:layout_marginTop="25dp"
+                                    android:text="@string/hold_your_ic_card_to_the_reader"
+                                    android:textAlignment="center"
+                                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                                    android:textColor="@android:color/white"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:textSize="14sp"
+                                    android:translationY="50dp"/>
+
+                        </FrameLayout>
+
+
 
                     </LinearLayout>
 

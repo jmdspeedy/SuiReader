@@ -1,5 +1,8 @@
 package com.jmdspeedy.suireader
 
+import android.animation.Keyframe
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
@@ -41,6 +44,11 @@ class MainActivity : AppCompatActivity() {
     private var suicaDataView: View? = null
     private var historyTitle: View? = null
     private var backgroundImage: ImageView? = null
+    private lateinit var pulse1: ImageView
+    private lateinit var pulse2: ImageView
+    private lateinit var pulse3: ImageView
+    private lateinit var whiteCircleView: View
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +59,13 @@ class MainActivity : AppCompatActivity() {
         suicaDataView = findViewById(R.id.suica_data_view)
         historyTitle = findViewById(R.id.history_title)
         backgroundImage = findViewById(R.id.background_image)
+        pulse1 = findViewById(R.id.pulse_1)
+        pulse2 = findViewById(R.id.pulse_2)
+        pulse3 = findViewById(R.id.pulse_3)
+        whiteCircleView = findViewById(R.id.white_circle_view)
+
+        startPulseAnimation()
+        startIdleTiltAnimation()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -71,6 +86,57 @@ class MainActivity : AppCompatActivity() {
 //            return
 //        }
     }
+
+    private fun startPulseAnimation() {
+        pulse1.visibility = View.VISIBLE
+        createPulseAnimator(pulse1).start()
+        pulse2.postDelayed({
+            pulse2.visibility = View.VISIBLE
+            createPulseAnimator(pulse2).start()
+        }, 600)
+        pulse3.postDelayed({
+            pulse3.visibility = View.VISIBLE
+            createPulseAnimator(pulse3).start()
+        }, 1200)
+    }
+
+    private fun createPulseAnimator(pulse: ImageView): ObjectAnimator {
+        val animator = ObjectAnimator.ofPropertyValuesHolder(
+            pulse,
+            PropertyValuesHolder.ofFloat(View.SCALE_X, 0.5f, 3f),
+            PropertyValuesHolder.ofFloat(View.SCALE_Y, 0.5f, 3f),
+            PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f)
+        )
+        animator.duration = 4000
+        animator.repeatCount = ObjectAnimator.INFINITE
+        animator.repeatMode = ObjectAnimator.RESTART
+        animator.interpolator = AccelerateDecelerateInterpolator()
+        return animator
+    }
+
+    private fun startIdleTiltAnimation() {
+        val rotationKf = PropertyValuesHolder.ofKeyframe(View.ROTATION,
+            Keyframe.ofFloat(0f, 0f),       // Start
+            Keyframe.ofFloat(0.1f, -5f),   // Tilt left
+            Keyframe.ofFloat(0.2f, 5f),    // Tilt right
+            Keyframe.ofFloat(0.3f, -5f),   // Tilt left
+            Keyframe.ofFloat(0.4f, 5f),    // Tilt right
+            Keyframe.ofFloat(0.5f, 0f),       // Back to center
+            Keyframe.ofFloat(1f, 0f)        // Pause at center
+        )
+
+        val animator = ObjectAnimator.ofPropertyValuesHolder(
+            whiteCircleView,
+            rotationKf
+        )
+        animator.duration = 8000 // A long duration for the 'once in a while' feel
+        animator.repeatCount = ObjectAnimator.INFINITE
+        animator.repeatMode = ObjectAnimator.RESTART
+        animator.interpolator = AccelerateDecelerateInterpolator()
+        animator.startDelay = 1900
+        animator.start()
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -129,7 +195,8 @@ class MainActivity : AppCompatActivity() {
             isJapaneseIC
         } catch (e: IOException) {
             Log.e("MainActivity", "Could not connect to FeliCa card to check system code.", e)
-            if (nfcF.isConnected) nfcF.close()
+            if (nfcF.isConnected)
+                nfcF.close()
             false
         }
     }
