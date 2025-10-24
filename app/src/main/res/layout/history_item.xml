@@ -42,6 +42,8 @@
                 android:layout_marginEnd="16dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?attr/colorOnSurface"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
                 app:layout_constraintStart_toEndOf="@id/icon"
                 app:layout_constraintTop_toBottomOf="@+id/date_text"
                 app:layout_constraintEnd_toStartOf="@+id/cost_balance_layout"

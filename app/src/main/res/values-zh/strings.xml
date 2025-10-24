@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Translation instructions can be found in the Readme -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation, ExtraTranslation">
-    <string name="app_name">NFC Reader</string>
-    <string name="intro_message">This is a simple app to read various tags (NDEF, RFID, FeliCa, ISO 14443, etc).\n\nYou use it by holding a tag/card against the back of your device.\n\nThis app is a fork of https://github.com/nadam/nfc-reader</string>
-    <string name="no_nfc">NFC isn\'t supported on this device</string>
-    <string name="clear_all">Clear all</string>
-    <string name="close_app">Close app</string>
+<resources>
+    <string name="app_name">SuiReader</string>
+    <string name="no_nfc">该设备不支持NFC</string>
+    <string name="hold_your_ic_card_to_the_reader">请把IC卡贴近读卡器</string>
+    <string name="history">乘车历史</string>
+    <string name="settings_title">设置</string>
+    <string name="version">版本 1.0.0</string>
+    <string name="language">语言</string>
+    <string name="light_dark_mode">浅色/深色模式</string>
+    <string name="export_history_as_pdf">导出历史为PDF</string>
+    <string name="by_jmdspeedy">作者 jmdspeedy</string>
+    <string name="no_history_found">未找到历史记录</string>
+    <string name="purchase">购物</string>
+    <string name="local_bus">巴士</string>
+    <string name="charge">充值</string>
+    <string name="new_card">开卡</string>
+    <string name="auto_charge">自动充值</string>
 </resources>

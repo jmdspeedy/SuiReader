@@ -5,6 +5,7 @@ import android.content.Context
 import android.nfc.Tag
 import android.nfc.tech.NfcF
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -12,6 +13,7 @@ import java.io.InputStreamReader
 import java.util.*
 
 data class HistoryBlock(
+    val raw: ByteArray,
     val consoleType: String,
     val processType: String,
     val date: String,
@@ -37,18 +39,37 @@ object Suica {
     private var stationMap: Map<String, String>? = null
 
     /**
-     * Initializes the station map by loading data from StationCode.csv in the assets folder.
+     * Initializes the station map by loading data from the appropriate CSV file based on the current app language.
      * This should be called once, preferably in your Application class or main activity's onCreate.
      */
     fun init(context: Context) {
-        if (stationMap == null) {
-            try {
-                context.assets.open("StationCode.csv").use { inputStream ->
-                    stationMap = loadStationMapFromCsv(inputStream)
-                    Log.d("Suica", "Station map loaded with ${stationMap?.size} entries.")
+        val currentLocale = AppCompatDelegate.getApplicationLocales().get(0) ?: Locale.getDefault()
+        val language = currentLocale.language
+
+        val fileName = when (language) {
+            "ja" -> "StationCodeJP.csv"
+            "zh" -> "StationCodeCN.csv"
+            else -> "StationCodeEN.csv" // Default to English
+        }
+
+        try {
+            context.assets.open(fileName).use { inputStream ->
+                stationMap = loadStationMapFromCsv(inputStream)
+                Log.d("Suica", "Station map loaded from '$fileName' with ${stationMap?.size} entries.")
+            }
+        } catch (e: IOException) {
+            Log.e("Suica", "Error loading $fileName. Make sure it's in the app/src/main/assets folder.", e)
+            // As a fallback, try loading the English version if the specific language file fails
+            if (fileName != "StationCodeEN.csv") {
+                Log.d("Suica", "Falling back to StationCodeEN.csv")
+                try {
+                    context.assets.open("StationCodeEN.csv").use { inputStream ->
+                        stationMap = loadStationMapFromCsv(inputStream)
+                        Log.d("Suica", "Fallback station map loaded from 'StationCodeEN.csv' with ${stationMap?.size} entries.")
+                    }
+                } catch (e2: IOException) {
+                    Log.e("Suica", "Error loading fallback StationCodeEN.csv.", e2)
                 }
-            } catch (e: IOException) {
-                Log.e("Suica", "Error loading StationCode.csv. Make sure it's in the app/src/main/assets folder.", e)
             }
         }
     }
@@ -206,6 +227,7 @@ object Suica {
         val exitStationName = exitStationCode?.let { lookupStationNameByHexCode(it) }
 
         val historyBlock = HistoryBlock(
+            raw = blockData,
             consoleType = consoleType,
             processType = processType,
             date = date,
@@ -220,6 +242,7 @@ object Suica {
         )
 
         logHistoryBlockDetails(historyBlock)
+        Log.d("SuicaDecoder", "Raw: ${toReversedHex(blockData)}")
 
         return historyBlock
     }

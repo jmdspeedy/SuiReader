@@ -86,7 +86,7 @@
                                     android:id="@+id/pulse_1"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:contentDescription="@string/pulse_animation"
+                                    android:contentDescription="pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 
@@ -94,7 +94,7 @@
                                     android:id="@+id/pulse_2"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:contentDescription="@string/pulse_animation"
+                                    android:contentDescription="pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 
@@ -102,7 +102,7 @@
                                     android:id="@+id/pulse_3"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:contentDescription="@string/pulse_animation"
+                                    android:contentDescription="pulse_animation"
                                     android:src="@drawable/pulse_circle"
                                     android:visibility="invisible" />
 

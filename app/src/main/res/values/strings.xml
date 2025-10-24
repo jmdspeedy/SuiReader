@@ -12,7 +12,22 @@
     <string name="suica">SUICA</string>
     <string name="history">History</string>
     <string name="icon_of_history_block">icon of history block</string>
-    <string name="settings_title">App Settings</string>
-    <string name="version">Version 1.0.0</string>
-    <string name="pulse_animation">Pulse animation</string>
+    <string name="settings_title">Settings</string>
+    <string name="no_history_found">No history found.</string>
+    <string name="purchase">Purchase</string>
+    <string name="local_bus">Local Bus</string>
+    <string name="charge">Charge</string>
+    <string name="auto_charge">Auto-charge</string>
+    <string name="magnetic_ticket_purchase">Magnetic ticket purchase</string>
+    <string name="fare_adjustment">Fare adjustment</string>
+    <string name="exit_at_window">Exit at window</string>
+    <string name="new_card">New card</string>
+    <string name="deduction_at_window">Deduction at window</string>
+    <string name="reissue">Reissue</string>
+    <string name="window_operation">Window operation</string>
+    <string name="language">Language</string>
+    <string name="version">version 1.0.0</string>
+    <string name="light_dark_mode">Light/Dark Mode</string>
+    <string name="export_history_as_pdf">Export History as PDF</string>
+    <string name="by_jmdspeedy">By jmdspeedy</string>
 </resources>

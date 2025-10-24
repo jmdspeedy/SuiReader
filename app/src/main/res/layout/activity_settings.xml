@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/settings_title"
-            app:titleTextColor="?attr/colorOnSurface"/>
+            app:titleTextColor="?attr/colorOnSurface" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -32,9 +32,10 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="140dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
-            app:strokeColor="#4A586F"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <FrameLayout
@@ -42,9 +43,9 @@
                 android:layout_height="wrap_content">
 
                 <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/glossy_sheen_gradient" />
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/glossy_sheen_gradient" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -85,15 +86,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/version"
-                            android:textColor="?attr/colorOnSurface"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textAppearance="?attr/textAppearanceBody1" />
 
                         <TextView
                             android:id="@+id/author_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="By jmdspeedy"
-                            android:textColor="?attr/colorOnSurface"
+                            android:text="@string/by_jmdspeedy"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textAppearance="?attr/textAppearanceBody1" />
 
                     </LinearLayout>
@@ -108,10 +109,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="172dp"
-            app:cardBackgroundColor="?attr/colorOnSecondary"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
-            app:strokeColor="#4A586F"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -122,9 +123,10 @@
 
                 <!-- Language Setting -->
                 <RelativeLayout
+                    android:id="@+id/language_setting"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="15dp">
+                    android:paddingVertical="14dp">
 
                     <ImageView
                         android:id="@+id/language_icon"
@@ -139,7 +141,7 @@
                         android:layout_toEndOf="@+id/language_icon"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="16dp"
-                        android:text="Language"
+                        android:text="@string/language"
                         android:textColor="?attr/colorOnSurface"
                         android:textAppearance="?attr/textAppearanceBody1" />
 
@@ -149,7 +151,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="15dp">
+                    android:paddingVertical="14dp">
 
                     <ImageView
                         android:id="@+id/theme_icon"
@@ -164,7 +166,7 @@
                         android:layout_toEndOf="@+id/theme_icon"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="16dp"
-                        android:text="Light/Dark Mode"
+                        android:text="@string/light_dark_mode"
                         android:textColor="?attr/colorOnSurface"
                         android:textAppearance="?attr/textAppearanceBody1" />
 
@@ -181,7 +183,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="15dp">
+                    android:paddingVertical="14dp">
 
                     <ImageView
                         android:id="@+id/export_icon"
@@ -196,7 +198,7 @@
                         android:layout_toEndOf="@+id/export_icon"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="16dp"
-                        android:text="Export History as PDF"
+                        android:text="@string/export_history_as_pdf"
                         android:textColor="?attr/colorOnSurface"
                         android:textAppearance="?attr/textAppearanceBody1" />
 

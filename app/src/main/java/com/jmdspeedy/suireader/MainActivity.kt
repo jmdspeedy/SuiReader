@@ -1,5 +1,8 @@
 package com.jmdspeedy.suireader
 
+import android.animation.Keyframe
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
@@ -83,8 +86,6 @@ class MainActivity : AppCompatActivity() {
 
         resolveIntent(intent)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        // Initialize the Suica station map
-        Suica.init(this)
 //        if (nfcAdapter == null) {
 //            showNoNfcDialog()
 //            return
@@ -93,6 +94,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Initialize the Suica station map
+        Suica.init(this)
         if (nfcAdapter?.isEnabled == false) {
             openNfcSettings()
         }
@@ -248,14 +251,20 @@ class MainActivity : AppCompatActivity() {
         // Clear old history
         historyList?.removeAllViews()
 
+        val emptyHistoryBlock = byteArrayOf(0, 0, 0, 0x80.toByte(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
         // Populate history
         val inflater = LayoutInflater.from(this)
         if (suicaData.transactionHistory.isEmpty()) {
             val noHistoryView = TextView(this)
-            noHistoryView.text = "No history found."
+            noHistoryView.text = getString(R.string.no_history_found)
             historyList?.addView(noHistoryView)
         } else {
             suicaData.transactionHistory.forEach { block ->
+                if (block.raw.contentEquals(emptyHistoryBlock)) {
+                    return@forEach // Skip rendering this block
+                }
+
                 val historyView = inflater.inflate(R.layout.history_item, historyList, false)
 
                 val icon = historyView.findViewById<ImageView>(R.id.icon)
@@ -275,13 +284,19 @@ class MainActivity : AppCompatActivity() {
 
                 // Set icon and description based on process type
                 when (block.processType) {
-                    "Charge", "Auto-charge" -> {
+                    "Charge", "Auto-charge", "New card" -> {
                         icon.setImageResource(R.drawable.charge)
-                        descriptionText.text = block.processType
+                        if (block.processType == "New card") {
+                            descriptionText.text = getString(R.string.new_card)
+                        } else if (block.processType == "Auto-charge") {
+                            descriptionText.text = getString(R.string.auto_charge)
+                        } else {
+                            descriptionText.text = getString(R.string.charge)
+                        }
                     }
                     "Bus" -> {
                         icon.setImageResource(R.drawable.bus)
-                        descriptionText.text = "Local Bus"
+                        descriptionText.text = getString(R.string.local_bus)
                     }
                     else -> { // Train
                         icon.setImageResource(R.drawable.train)
@@ -291,7 +306,7 @@ class MainActivity : AppCompatActivity() {
                 when (block.consoleType) {
                     "Vending machine/POS", "Vending machine" -> {
                         icon.setImageResource(R.drawable.shopping)
-                        descriptionText.text = "Purchase"
+                        descriptionText.text = getString(R.string.purchase)
                     }
                 }
                 historyList?.addView(historyView)
