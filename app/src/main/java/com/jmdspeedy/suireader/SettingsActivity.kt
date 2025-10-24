@@ -44,7 +44,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun showLanguageDialog() {
-        val languages = arrayOf("Japanese", "English", "Chinese")
+        val languages = arrayOf("日本語", "English", "简体中文")
         val languageCodes = arrayOf("ja", "en", "zh")
 
         MaterialAlertDialogBuilder(this)
